@@ -1,14 +1,13 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'NodeJS' // Assumes you've set up NodeJS in Jenkins Global Tool Configuration
+        maven 'Maven'   // Assumes you've set up Maven in Jenkins Global Tool Configuration
+    }
+
     environment {
         SCANNER_HOME = tool 'SonarQubeScanner'
-        NEXUS_VERSION = "nexus3"
-        NEXUS_PROTOCOL = "http"
-        SONARQUBE_SERVER = 'SonarQube'  // Name configured for SonarQube in Jenkins
-        NEXUS_URL = '10.0.0.247:8081' // Nexus URL
-        NEXUS_REPO = 'npm-private'
-        NEXUS_CREDENTIALS_ID = 'npm-nexus-creds' // Jenkins credentials ID for Nexus
     }
 
     stages {
@@ -20,47 +19,41 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                script {
+                    // Adjusted for Windows - no nohup needed
+                    bat 'npm install'
+                }
             }
         }
 
         stage('Build') {
             steps {
-                withCredentials([file(credentialsId: 'npm-nexus-creds', variable: 'mynpmrc')]) {
-                    echo 'Building...'
-                    sh 'npm install --userconfig $mynpmrc --registry http://10.0.0.247:8081/repository/npm-book-repo --loglevel verbose'
+                script {
+                    bat 'npm run build'
                 }
             }
         }
 
         stage('SonarQube Analysis') {
+            environment {
+                SONARQUBE_SCANNER_PARAMS = "-Dsonar.projectKey=my_project_key -Dsonar.sources=."
+            }
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube') {
-                        sh """${SCANNER_HOME}/bin/sonar-scanner -Dsonar.host.url=http://10.0.0.247:9000/ \
-                        -Dsonar.token=squ_ee990db47a9bdffa732b9fea384c2782eb8e56e1 \
-                        -Dsonar.projectName="Book_API" \
-                        -Dsonar.exclusions=**/node_modules/** \
-                        -Dsonar.projectKey=Book_API"""
-                    }
+                    // Using bat command for Windows compatibility
+                    bat "${SCANNER_HOME}/bin/sonar-scanner ${SONARQUBE_SCANNER_PARAMS}"
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                script {
-                    sleep(time: 20, unit: 'SECONDS') // Sleep to wait for the status to update
-                    def qualityGate = waitForQualityGate()
-                    if (qualityGate.status == 'IN_PROGRESS') {
-                        sleep(time: 20, unit: 'SECONDS') // Sleep to wait for the status to update
-                        error "Quality Gate is still in progress. Retrying..."
-                    }
-
-                    if (qualityGate.status != 'OK') {
-                        error "Quality Gate failed: ${qualityGate.status}"
-                    } else {
-                        echo "Quality Gate passed: ${qualityGate.status}"
+                timeout(time: 5, unit: 'MINUTES') {
+                    script {
+                        def qualityGate = waitForQualityGate()
+                        if (qualityGate.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
+                        }
                     }
                 }
             }
@@ -68,18 +61,14 @@ pipeline {
 
         stage('Publish to Nexus') {
             steps {
-                withCredentials([file(credentialsId: 'npm-nexus-creds', variable: 'mynpmrc')]) {
-                    echo 'Publishing to Nexus...'
-                    sh 'npm publish --userconfig $mynpmrc --loglevel verbose'
+                script {
+                    bat 'mvn deploy'
                 }
             }
         }
     }
 
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
         failure {
             echo 'Pipeline failed.'
         }
