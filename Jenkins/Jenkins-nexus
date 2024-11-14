@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS' // Assumes you've set up NodeJS in Jenkins Global Tool Configuration
+        nodejs 'NodeJs' // Assumes you've set up NodeJS in Jenkins Global Tool Configuration
         maven 'Maven'   // Assumes you've set up Maven in Jenkins Global Tool Configuration
     }
 
