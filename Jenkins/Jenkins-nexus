@@ -30,8 +30,10 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'npm-nexus-creds', variable: 'mynpmrc')]) {
                     echo 'Building...'
-                    echo '%mynpmrc%'
-                    sh 'npm install --userconfig %mynpmrc% --registry http://10.0.0.247:8081/repository/npm-group --loglevel verbose'
+                    echo "%mynpmrc%" // For Windows, use % instead of $
+                    bat '''
+                        npm install --userconfig %mynpmrc% --registry http://10.0.0.247:8081/repository/npm-group --loglevel verbose
+                    '''
                 }
             }
         }
