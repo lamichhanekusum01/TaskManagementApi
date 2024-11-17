@@ -35,7 +35,7 @@ pipeline {
                         npm set audit false
                     '''
                     bat '''
-                        npm install --userconfig %mynpmrc% --registry http://localhost:8081/repository/npm-private --loglevel verbose
+                        npm install --no-audit --userconfig %mynpmrc% --registry http://localhost:8081/repository/npm-private --loglevel verbose
                     '''
                 }
             }
