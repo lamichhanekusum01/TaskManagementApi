@@ -44,11 +44,13 @@ pipeline {
                 script {
                     withSonarQubeEnv('SonarQube') {
                         bat """
-                            %SCANNER_HOME%\\bin\\sonar-scanner -Dsonar.host.url=http://localhost:9000/ ^
-                            -Dsonar.token=squ_946bf8fd906acd5951dc95a565d79c22dd02741b ^
+                            %SCANNER_HOME%\\bin\\sonar-scanner ^
+                            -Dsonar.host.url=http://localhost:9000/ ^
+                            -Dsonar.token=your_token ^
                             -Dsonar.projectName="nodeapp" ^
                             -Dsonar.exclusions=**/node_modules/** ^
-                            -Dsonar.projectKey=nodeapp
+                            -Dsonar.projectKey=nodeapp ^
+                            -Dsonar.userHome=C:\\JenkinsSonarCache
                         """
                     }
                 }
