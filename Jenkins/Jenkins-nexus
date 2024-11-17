@@ -46,7 +46,7 @@ pipeline {
                         bat """
                             %SCANNER_HOME%\\bin\\sonar-scanner ^
                             -Dsonar.host.url=http://localhost:9000/ ^
-                            -Dsonar.token=your_token ^
+                            -Dsonar.token=squ_946bf8fd906acd5951dc95a565d79c22dd02741b ^
                             -Dsonar.projectName="nodeapp" ^
                             -Dsonar.exclusions=**/node_modules/** ^
                             -Dsonar.projectKey=nodeapp ^
