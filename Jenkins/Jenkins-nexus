@@ -32,6 +32,7 @@ pipeline {
                     echo 'Building...'
                     echo "%mynpmrc%" // For Windows, use % instead of $
                     bat '''
+                        npm set audit false
                         npm install --userconfig %mynpmrc% --registry http://localhost:8081/repository/npm-private --loglevel verbose
                     '''
                 }
