@@ -20,7 +20,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Adjusted for Windows - no nohup needed
                     bat 'npm install'
                 }
             }
@@ -33,12 +32,9 @@ pipeline {
                     echo "%mynpmrc%" // For Windows, use % instead of $
                     bat '''
                         npm set audit false
-                    '''
-                    bat '''
                         npm install --no-audit --userconfig %mynpmrc% --registry http://localhost:8081/repository/npm-private --loglevel verbose
                     '''
                     echo 'Building Completed'
-
                 }
             }
         }
@@ -47,11 +43,13 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv('SonarQube') {
-                        sh """${SCANNER_HOME}/bin/sonar-scanner -Dsonar.host.url=http://localhost:9000/ \
-                        -Dsonar.token=squ_ee990db47a9bdffa732b9fea384c2782eb8e56e1 \
-                        -Dsonar.projectName="nodeapp" \
-                        -Dsonar.exclusions=**/node_modules/** \
-                        -Dsonar.projectKey=nodeapp"""
+                        bat """
+                            %SCANNER_HOME%\\bin\\sonar-scanner -Dsonar.host.url=http://localhost:9000/ ^
+                            -Dsonar.token=squ_ee990db47a9bdffa732b9fea384c2782eb8e56e1 ^
+                            -Dsonar.projectName="nodeapp" ^
+                            -Dsonar.exclusions=**/node_modules/** ^
+                            -Dsonar.projectKey=nodeapp
+                        """
                     }
                 }
             }
@@ -69,20 +67,18 @@ pipeline {
 
                     if (qualityGate.status != 'OK') {
                         error "Quality Gate failed: ${qualityGate.status}"
-                    }
-                    else {
+                    } else {
                         echo "Quality Gate passed: ${qualityGate.status}"
                     }
                 }
             }
         }
 
-
         stage('Publish to Nexus') {
             steps {
                 withCredentials([file(credentialsId: 'npm-nexus-creds', variable: 'mynpmrc')]) {
                     echo 'Publishing to Nexus...'
-                    sh 'npm publish --userconfig $mynpmrc --loglevel verbose'
+                    bat 'npm publish --userconfig %mynpmrc% --loglevel verbose'
                 }
             }
         }
