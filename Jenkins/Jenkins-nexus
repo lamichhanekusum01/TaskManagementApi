@@ -32,7 +32,7 @@ pipeline {
                     echo 'Building...'
                     echo "%mynpmrc%" // For Windows, use % instead of $
                     bat '''
-                        npm install --userconfig %mynpmrc% --registry http://10.0.0.247:8081/repository/npm-group --loglevel verbose
+                        npm install --userconfig %mynpmrc% --registry http://localhost:8081/repository/npm-group --loglevel verbose
                     '''
                 }
             }
