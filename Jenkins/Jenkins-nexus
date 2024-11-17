@@ -37,6 +37,8 @@ pipeline {
                     bat '''
                         npm install --no-audit --userconfig %mynpmrc% --registry http://localhost:8081/repository/npm-private --loglevel verbose
                     '''
+                    echo 'Building Completed'
+
                 }
             }
         }
